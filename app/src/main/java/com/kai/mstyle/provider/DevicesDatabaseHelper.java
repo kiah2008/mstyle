@@ -1,4 +1,4 @@
-package com.kai.mystyle.provider;
+package com.kai.mstyle.provider;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

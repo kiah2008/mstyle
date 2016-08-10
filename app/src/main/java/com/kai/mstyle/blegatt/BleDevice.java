@@ -1,10 +1,10 @@
-package com.kai.mystyle.blegatt;
+package com.kai.mstyle.blegatt;
 
 import android.bluetooth.BluetoothDevice;
 import android.database.Cursor;
 import android.text.TextUtils;
 
-import com.kai.mystyle.provider.DeviceContent;
+import com.kai.mstyle.provider.DeviceContent;
 
 public class BleDevice {
     public String mAddress;
@@ -17,9 +17,9 @@ public class BleDevice {
     }
 
     public BleDevice(Cursor cursor) {
-        mName = cursor.getColumnName(cursor.getColumnIndex(DeviceContent
+        mName = cursor.getString(cursor.getColumnIndex(DeviceContent
                 .DeviceColumns.NAME));
-        mAddress = cursor.getColumnName(cursor.getColumnIndex(DeviceContent
+        mAddress = cursor.getString(cursor.getColumnIndex(DeviceContent
                 .DeviceColumns.ADDRESS));
     }
 
@@ -40,10 +40,10 @@ public class BleDevice {
     }
 
     public String getAddress() {
-        return this.mAddress;
+        return mAddress;
     }
 
     public String getName() {
-        return this.mName;
+        return mName;
     }
 }

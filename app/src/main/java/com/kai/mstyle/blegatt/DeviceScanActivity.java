@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.kai.mystyle.blegatt;
+package com.kai.mstyle.blegatt;
 
 import android.app.Activity;
 import android.app.ListActivity;
@@ -37,11 +37,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.kai.mystyle.R;
-import com.kai.mystyle.provider.DeviceContent;
+import com.kai.mstyle.R;
+import com.kai.mstyle.provider.DeviceContent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,29 +69,33 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-//                            mLeDeviceListAdapter.addDevice(device);
-                            mLeDeviceListAdapter.notifyDataSetChanged();
+                            Log.d(TAG, "Device found " + device.getAddress
+                                    () + "/" + device.getName());
+                            checkContent(device);
                         }
                     });
                 }
             };
 
-    void checkContent(BluetoothDevice device) {
+    boolean checkContent(BluetoothDevice device) {
         Cursor c = mLeDeviceListAdapter.getCursor();
-        if (c == null) {
-            return;
-        }
-        c.moveToFirst();
-        while (c.moveToNext()) {
-            if (device.getAddress().equals(c.getString(c.getColumnIndex(DeviceContent
-                    .DeviceColumns.ADDRESS)))) {
-                return;
+        if (c != null) {
+            c.moveToPosition(-1);
+            while (c.moveToNext()) {
+                if (device.getAddress().equals(c.getString(c.getColumnIndex(DeviceContent
+                        .DeviceColumns.ADDRESS)))) {
+                    Log.d(TAG, "checkContent with dup " + device.getName());
+                    return false;
+                }
             }
+        } else {
+            Log.d(TAG, "checkContent witch empty content, insert!");
         }
         ContentValues cv = new ContentValues();
         cv.put(DeviceContent.DeviceColumns.NAME, device.getName());
         cv.put(DeviceContent.DeviceColumns.ADDRESS, device.getAddress());
         getContentResolver().insert(DeviceContent.CONTENT_URI, cv);
+        return true;
     }
 
     @Override
@@ -128,7 +131,8 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
             @Override
             public void bindView(View view, Context context, Cursor cursor) {
                 super.bindView(view, context, cursor);
-
+                BleDevice device = new BleDevice(cursor);
+                view.setTag(device);
             }
         };
         setListAdapter(mLeDeviceListAdapter);
@@ -152,10 +156,24 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (!mScanning) {
+            menu.findItem(R.id.menu_stop).setVisible(false);
+            menu.findItem(R.id.menu_scan).setVisible(true);
+            menu.findItem(R.id.menu_refresh).setActionView(null);
+        } else {
+            menu.findItem(R.id.menu_stop).setVisible(true);
+            menu.findItem(R.id.menu_scan).setVisible(false);
+            menu.findItem(R.id.menu_refresh).setActionView(
+                    R.layout.actionbar_indeterminate_progress);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_scan:
-                mLeDeviceListAdapter.swapCursor(null);
                 scanLeDevice(true);
                 break;
             case R.id.menu_stop:
@@ -198,17 +216,15 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
     protected void onPause() {
         super.onPause();
         scanLeDevice(false);
-        mLeDeviceListAdapter.swapCursor(null);
     }
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        Cursor c = mLeDeviceListAdapter.getCursor();
-        if (c == null || c.move(position)) {
-            Log.e(TAG, "failed to find item " + position);
+        BleDevice device = (BleDevice) v.getTag();
+        if (device == null) {
+            Log.e(TAG, "itemClicked empty");
             return;
         }
-        BleDevice device = new BleDevice(c);
         final Intent intent = new Intent(this, DeviceControlActivity.class);
         intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
         intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
@@ -242,6 +258,7 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Log.d(TAG, "onCreateLoader " + id);
         return new CursorLoader(this, DeviceContent.CONTENT_URI,
                 DeviceContent.COLUMNS,
                 null, null, null);
@@ -249,7 +266,7 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        if(data == null) {
+        if (data == null) {
             Log.e(TAG, "Empty content");
             return;
         }
@@ -270,14 +287,14 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
         }
 
     }
-
+    /*
     static class ViewHolder {
         TextView deviceName;
         TextView deviceAddress;
     }
 
     // Adapter for holding devices found through scanning.
-    /*
+
     private class LeDeviceListAdapter extends CursorAdapter {
         private ArrayList<BluetoothDevice> mLeDevices;
         private LayoutInflater mInflator;

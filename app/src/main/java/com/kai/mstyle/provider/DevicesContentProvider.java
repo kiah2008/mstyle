@@ -1,4 +1,4 @@
-package com.kai.mystyle.provider;
+package com.kai.mstyle.provider;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;

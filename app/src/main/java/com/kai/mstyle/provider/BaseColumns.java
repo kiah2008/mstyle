@@ -1,4 +1,4 @@
-package com.kai.mystyle.provider;
+package com.kai.mstyle.provider;
 
 /**
  * Created by kiah on 8/10/2016.

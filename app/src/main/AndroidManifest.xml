@@ -16,7 +16,7 @@
 -->
 
 
-<manifest package="com.kai.mystyle"
+<manifest package="com.kai.mstyle"
           xmlns:android="http://schemas.android.com/apk/res/android"
           android:versionCode="1"
           android:versionName="1.0">
@@ -41,21 +41,21 @@
         android:label="@string/app_name"
         android:theme="@android:style/Theme.Holo.Light">
         <activity
-            android:name=".blegatt.DeviceScanActivity"
+            android:name="com.kai.mstyle.blegatt.DeviceScanActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".blegatt.DeviceControlActivity"/>
+        <activity android:name="com.kai.mstyle.blegatt.DeviceControlActivity"/>
 
         <service
-            android:name=".blegatt.BluetoothLeService"
+            android:name="com.kai.mstyle.blegatt.BluetoothLeService"
             android:enabled="true"/>
         <provider
-            android:name=".provider.DevicesContentProvider"
-            android:authorities="com.kai.mystyle.provider"/>
+            android:name="com.kai.mstyle.provider.DevicesContentProvider"
+            android:authorities="com.kai.mstyle.provider"/>
     </application>
 
 </manifest>

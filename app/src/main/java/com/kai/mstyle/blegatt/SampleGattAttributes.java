@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.kai.mystyle.blegatt;
+package com.kai.mstyle.blegatt;
 
 import java.util.HashMap;
 
