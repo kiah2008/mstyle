@@ -1,0 +1,26 @@
+apply plugin: 'com.android.application'
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile files('libs/miaodou-sdk-1.0.8.jar')
+}
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion '23.0.2'
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+    defaultConfig {
+        applicationId 'com.kai.mystyle'
+        versionCode 1
+        versionName '1.0'
+        minSdkVersion 21
+        targetSdkVersion 23
+    }
+    productFlavors {
+    }
+}
+dependencies {
+}
