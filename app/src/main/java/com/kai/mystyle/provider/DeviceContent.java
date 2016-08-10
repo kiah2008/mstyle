@@ -9,6 +9,11 @@ import android.net.Uri;
 public class DeviceContent extends BaseContent {
     public static final Uri CONTENT_URI = Uri.withAppendedPath(DeviceContracts.CONTENT_URI, "devices");
     protected static final String TABLE_NAME = "tb_devices";
+    public static final String[] COLUMNS = new String[] {
+            DeviceColumns.ID,
+            DeviceColumns.NAME,
+            DeviceColumns.ADDRESS
+    };
 
     protected void createTables(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL("create table " + TABLE_NAME + "(" +
