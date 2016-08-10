@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.bluetoothlegatt;
+package com.kai.mystyle.bluetoothlegatt;
 
 import android.app.Activity;
 import android.app.ListActivity;
@@ -37,6 +37,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+
+import com.kai.mystyle.R;
 
 /**
  * Activity for scanning and displaying available Bluetooth LE devices.

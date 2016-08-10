@@ -1,0 +1,12 @@
+bin/*
+.project
+gen/*
+Thumbs.db
+.classpath
+.idea/
+.class
+.settings/
+/.gradle
+/build
+*.iml
+/app/build
