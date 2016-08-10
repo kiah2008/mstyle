@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.kai.mystyle.bluetoothlegatt;
+package com.kai.mystyle.blegatt;
 
 import java.util.HashMap;
 
