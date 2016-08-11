@@ -33,4 +33,9 @@
     <string name="menu_disconnect">Disconnect</string>
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
+    <!--action mode menu -->
+    <string name="menu_delete">Delete</string>
+    <string name="menu_update">Update</string>
+
+    <string name="del_success">Deleted</string>
 </resources>

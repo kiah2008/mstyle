@@ -22,6 +22,7 @@ import android.app.LoaderManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -32,9 +33,13 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
@@ -48,7 +53,7 @@ import java.util.List;
 /**
  * Activity for scanning and displaying available Bluetooth LE devices.
  */
-public class DeviceScanActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class DeviceScanActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor>, AdapterView.OnItemLongClickListener, ActionMode.Callback {
 
     private static final String TAG = DeviceScanActivity.class.getSimpleName();
     private static final int LOADER_DEVICERS = 0;
@@ -60,6 +65,7 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
     private boolean mScanning;
     private Handler mHandler;
     private List<BleDevice> mScanDevices = new ArrayList<BleDevice>(10);
+    private ListView mListView;
     // Device scan callback.
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
             new BluetoothAdapter.LeScanCallback() {
@@ -76,6 +82,8 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
                     });
                 }
             };
+    private ActionMode mCabMode;
+    private int mSelectedPosition;
 
     boolean checkContent(BluetoothDevice device) {
         Cursor c = mLeDeviceListAdapter.getCursor();
@@ -137,6 +145,9 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
         };
         setListAdapter(mLeDeviceListAdapter);
         getLoaderManager().initLoader(LOADER_DEVICERS, Bundle.EMPTY, this);
+        mListView = getListView();
+        mListView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
+        mListView.setOnItemLongClickListener(this);
     }
 
     @Override
@@ -220,6 +231,9 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
+        if (mCabMode != null) {
+            return;
+        }
         BleDevice device = (BleDevice) v.getTag();
         if (device == null) {
             Log.e(TAG, "itemClicked empty");
@@ -285,6 +299,63 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
         if (mLeDeviceListAdapter != null) {
             mLeDeviceListAdapter.swapCursor(null);
         }
+
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        if (mCabMode != null)
+            return false;
+        mListView.setItemChecked(position, true);
+        mCabMode = startActionMode(this);
+        return true;
+    }
+
+    @Override
+    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        final MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.action_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        return true;
+    }
+
+    @Override
+    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        boolean handled = true;
+        switch (item.getItemId()) {
+            case R.id.menu_delete:
+                int selPosition = mListView.getCheckedItemPosition();
+                View view = mListView.getChildAt(selPosition);
+                BleDevice device = (BleDevice) view.getTag();
+                Log.d(TAG, "action Delete " + selPosition + "/" + device
+                        .getId());
+                int result = getContentResolver().delete(ContentUris
+                        .withAppendedId(DeviceContent
+                                .CONTENT_URI, device
+                                .getId()), null, null);
+                if (result > 0) {
+                    Toast.makeText(this, device.getName() + (" ") + getString
+                                    (R.string.del_success),
+                            Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case R.id.menu_update:
+                break;
+        }
+        if (handled) {
+            mode.finish();
+        }
+        return handled;
+    }
+
+    @Override
+    public void onDestroyActionMode(ActionMode mode) {
+        Log.d(TAG, "destroy actionMode ");
+        mCabMode = null;
 
     }
     /*

@@ -9,7 +9,7 @@ import com.kai.mstyle.provider.DeviceContent;
 public class BleDevice {
     public String mAddress;
     public String mName;
-    public String mUuid;
+    public long mId;
 
     public BleDevice(BluetoothDevice device) {
         this.mName = device.getName();
@@ -21,6 +21,8 @@ public class BleDevice {
                 .DeviceColumns.NAME));
         mAddress = cursor.getString(cursor.getColumnIndex(DeviceContent
                 .DeviceColumns.ADDRESS));
+        mId = cursor.getLong(cursor.getColumnIndex(DeviceContent.DeviceColumns
+                .ID));
     }
 
     public boolean equals(Object paramObject) {
@@ -45,5 +47,9 @@ public class BleDevice {
 
     public String getName() {
         return mName;
+    }
+
+    public long getId() {
+        return mId;
     }
 }

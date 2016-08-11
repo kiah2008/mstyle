@@ -62,8 +62,32 @@ public class DevicesContentProvider extends ContentProvider {
         }
     }
 
-    public int delete(Uri paramUri, String paramString, String[] paramArrayOfString) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    @Override
+    public int delete(Uri paramUri, String selection, String[] selectionArgs) {
+        int match = findMatch(paramUri);
+        String tableName = null;
+        int result = 0;
+        try {
+            tableName = findTableName(match);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+        switch (match) {
+            case DEVICES:
+                result = mDatabase.delete(tableName, null, null);
+                break;
+            case DEVICES_ID:
+                String id = paramUri.getPathSegments().get(1);
+                result = mDatabase.delete(tableName, whereWithId(id,
+                        selection), selectionArgs);
+                break;
+            default:
+                break;
+        }
+        mContext.getContentResolver().notifyChange(getBaseNotificationUri
+                (match), null);
+        return result;
     }
 
     String findTableName(int match)
