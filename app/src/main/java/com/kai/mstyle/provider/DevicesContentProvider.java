@@ -75,7 +75,7 @@ public class DevicesContentProvider extends ContentProvider {
         }
         switch (match) {
             case DEVICES:
-                result = mDatabase.delete(tableName, null, null);
+                result = mDatabase.delete(tableName, selection, selectionArgs);
                 break;
             case DEVICES_ID:
                 String id = paramUri.getPathSegments().get(1);

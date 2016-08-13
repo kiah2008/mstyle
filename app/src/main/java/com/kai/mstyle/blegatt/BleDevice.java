@@ -7,9 +7,11 @@ import android.text.TextUtils;
 import com.kai.mstyle.provider.DeviceContent;
 
 public class BleDevice {
+    public static final int RSSI_INVALID = -1;
     public String mAddress;
     public String mName;
     public long mId;
+    private int mRssi = RSSI_INVALID;
 
     public BleDevice(BluetoothDevice device) {
         this.mName = device.getName();
@@ -51,5 +53,11 @@ public class BleDevice {
 
     public long getId() {
         return mId;
+    }
+    public void setRssi(int rssi) {
+        mRssi = rssi;
+    }
+    public int getRssi() {
+        return mRssi;
     }
 }

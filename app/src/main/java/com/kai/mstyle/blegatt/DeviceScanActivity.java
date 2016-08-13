@@ -71,19 +71,21 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
             new BluetoothAdapter.LeScanCallback() {
 
                 @Override
-                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+                public void onLeScan(final BluetoothDevice device, int rssi, final byte[] scanRecord) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Log.d(TAG, "Device found " + device.getAddress
                                     () + "/" + device.getName());
+                            if (scanRecord != null && scanRecord.length>0) {
+                                Log.d(TAG, "Device found ");
+                            }
                             checkContent(device);
                         }
                     });
                 }
             };
     private ActionMode mCabMode;
-    private int mSelectedPosition;
 
     boolean checkContent(BluetoothDevice device) {
         Cursor c = mLeDeviceListAdapter.getCursor();

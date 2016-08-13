@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile files('libs/miaodou-sdk-1.0.8.jar')
 }
 
 android {

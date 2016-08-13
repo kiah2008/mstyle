@@ -1,0 +1,1 @@
+(BluetoothLeService|DeviceControlActivity|DeviceScanActivity)\s*:

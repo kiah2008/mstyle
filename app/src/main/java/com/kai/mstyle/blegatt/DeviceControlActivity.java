@@ -225,9 +225,10 @@ public class DeviceControlActivity extends Activity {
             menu.findItem(com.kai.mstyle.R.id.menu_disconnect).setVisible(false);
             menu.findItem(R.id.menu_refresh).setVisible(true);
             menu.findItem(R.id.menu_refresh).setActionView(R.layout.actionbar_indeterminate_progress);
-        } else {
-            menu.findItem(com.kai.mstyle.R.id.menu_connect).setVisible(false);
-            menu.findItem(com.kai.mstyle.R.id.menu_disconnect).setVisible(true);
+        } else /*NONCONNECTED*/ {
+            menu.findItem(com.kai.mstyle.R.id.menu_connect).setVisible(true);
+            menu.findItem(com.kai.mstyle.R.id.menu_disconnect).setVisible
+                    (false);
             menu.findItem(R.id.menu_refresh).setVisible(false);
             menu.findItem(R.id.menu_refresh).setActionView(null);
         }

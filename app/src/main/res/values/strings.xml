@@ -38,4 +38,8 @@
     <string name="menu_update">Update</string>
 
     <string name="del_success">Deleted</string>
+
+    <string name="bt_name">Name</string>
+    <string name="bt_mac">Address</string>
+    <string name="bt_default">Device Name</string>
 </resources>
