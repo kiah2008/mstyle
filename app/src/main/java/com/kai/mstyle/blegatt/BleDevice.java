@@ -12,6 +12,9 @@ public class BleDevice {
     public String mName;
     public long mId;
     private int mRssi = RSSI_INVALID;
+    private SignalStrength.SIGNAL_LEVEL mRssiLevel = SignalStrength
+            .SIGNAL_LEVEL.SIGNAL_NONE;
+    private long mAddedTime;
 
     public BleDevice(BluetoothDevice device) {
         this.mName = device.getName();
@@ -25,6 +28,8 @@ public class BleDevice {
                 .DeviceColumns.ADDRESS));
         mId = cursor.getLong(cursor.getColumnIndex(DeviceContent.DeviceColumns
                 .ID));
+        mAddedTime = cursor.getLong(cursor.getColumnIndex(DeviceContent
+                .DeviceColumns.ADD_TIME));
     }
 
     public boolean equals(Object paramObject) {
@@ -54,10 +59,23 @@ public class BleDevice {
     public long getId() {
         return mId;
     }
+
+    public int getRssi() {
+        return mRssi;
+    }
+
     public void setRssi(int rssi) {
         mRssi = rssi;
     }
-    public int getRssi() {
-        return mRssi;
+
+    public SignalStrength.SIGNAL_LEVEL getRssiLevel() {
+        return mRssiLevel;
+    }
+
+    public void setRssiLevel(SignalStrength.SIGNAL_LEVEL level) {
+        mRssiLevel = level;
+    }
+    public long getAddedTime() {
+        return mAddedTime;
     }
 }

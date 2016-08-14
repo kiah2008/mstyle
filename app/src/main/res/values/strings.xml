@@ -16,10 +16,11 @@
 <resources>
     <string name="ble_not_supported">BLE is not supported</string>
     <string name="label_data">Data:</string>
-    <string name="label_device_address">Device address:</string>
+    <string name="label_device_address">Address:</string>
     <string name="label_state">State:</string>
     <string name="no_data">No data</string>
     <string name="connected">Connected</string>
+    <string name="connecting">Connecting</string>
     <string name="disconnected">Disconnected</string>
     <string name="title_devices">BLE Device Scan</string>
     <string name="error_bluetooth_not_supported">Bluetooth not supported.</string>
@@ -42,4 +43,7 @@
     <string name="bt_name">Name</string>
     <string name="bt_mac">Address</string>
     <string name="bt_default">Device Name</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

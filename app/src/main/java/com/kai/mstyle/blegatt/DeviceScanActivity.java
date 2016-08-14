@@ -32,6 +32,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -40,15 +41,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.kai.mstyle.R;
 import com.kai.mstyle.provider.DeviceContent;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
 
 /**
  * Activity for scanning and displaying available Bluetooth LE devices.
@@ -64,21 +68,36 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
     private BluetoothAdapter mBluetoothAdapter;
     private boolean mScanning;
     private Handler mHandler;
-    private List<BleDevice> mScanDevices = new ArrayList<BleDevice>(10);
     private ListView mListView;
+    private HashMap<String, SignalStrength.SIGNAL_LEVEL> mDeviceRssiLevels = new
+            HashMap<>(10);
+    private SimpleDateFormat mDateFormat = new SimpleDateFormat("MM/dd HH:mm");
     // Device scan callback.
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
             new BluetoothAdapter.LeScanCallback() {
 
                 @Override
-                public void onLeScan(final BluetoothDevice device, int rssi, final byte[] scanRecord) {
+                public void onLeScan(final BluetoothDevice device, final int rssi, final byte[] scanRecord) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Log.d(TAG, "Device found " + device.getAddress
-                                    () + "/" + device.getName());
-                            if (scanRecord != null && scanRecord.length>0) {
-                                Log.d(TAG, "Device found ");
+                                    () + "/" + device.getName() + "/rssi: "
+                                    + rssi);
+                            SignalStrength.SIGNAL_LEVEL level =
+                                    SignalStrength.getLevel(rssi);
+                            if (!mDeviceRssiLevels.containsKey(device.getAddress
+                                    ()) || (mDeviceRssiLevels.get(device.getAddress())
+                                    != level)) {
+                                mDeviceRssiLevels.put(device.getAddress(),
+                                        level);
+                                mLeDeviceListAdapter.notifyDataSetChanged();
+                            } else {
+                                return;
+                            }
+                            if (scanRecord != null && scanRecord.length > 0) {
+                                Log.d(TAG, "Device found records" +
+                                        BtUtils.dumpBytes(scanRecord));
                             }
                             checkContent(device);
                         }
@@ -89,6 +108,10 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
 
     boolean checkContent(BluetoothDevice device) {
         Cursor c = mLeDeviceListAdapter.getCursor();
+        String address = device.getAddress();
+        if (TextUtils.isEmpty(address)) {
+            return false;
+        }
         if (c != null) {
             c.moveToPosition(-1);
             while (c.moveToNext()) {
@@ -104,6 +127,8 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
         ContentValues cv = new ContentValues();
         cv.put(DeviceContent.DeviceColumns.NAME, device.getName());
         cv.put(DeviceContent.DeviceColumns.ADDRESS, device.getAddress());
+        cv.put(DeviceContent.DeviceColumns.ADD_TIME, System
+                .currentTimeMillis());
         getContentResolver().insert(DeviceContent.CONTENT_URI, cv);
         return true;
     }
@@ -143,6 +168,39 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
                 super.bindView(view, context, cursor);
                 BleDevice device = new BleDevice(cursor);
                 view.setTag(device);
+                if (device.getAddedTime() > 0) {
+                    Calendar clendar = Calendar.getInstance();
+                    clendar.setTimeInMillis(device.getAddedTime());
+                    ((TextView) view.findViewById(R.id.add_date))
+                            .setText(mDateFormat.format(clendar
+                                    .getTime()).toString());
+                }
+                SignalStrength.SIGNAL_LEVEL level = mDeviceRssiLevels.get
+                        (device.getAddress());
+                if (level == null) {
+                    return;
+                }
+                ImageView image = (ImageView) view.findViewById(R.id
+                        .signal_level);
+                switch (level) {
+                    case SIGNAL_GREAT:
+                        image.setImageResource(R.drawable.ic_qs_signal_4);
+                        break;
+                    case SIGNAL_GOOD:
+                        image.setImageResource(R.drawable.ic_qs_signal_3);
+                        break;
+                    case SIGNAL_POOR:
+                        image.setImageResource(R.drawable.ic_qs_signal_2);
+                        break;
+//                    case SIGNAL_GREAT:
+//                        image.setImageResource(R.drawable.ic_qs_signal_1);
+//                        break;
+                    case SIGNAL_NONE:
+                    default:
+                        image.setImageResource(R.drawable.ic_qs_signal_0);
+                        break;
+                }
+                device.setRssiLevel(level);
             }
         };
         setListAdapter(mLeDeviceListAdapter);
@@ -340,6 +398,7 @@ public class DeviceScanActivity extends ListActivity implements LoaderManager.Lo
                                 .CONTENT_URI, device
                                 .getId()), null, null);
                 if (result > 0) {
+                    mDeviceRssiLevels.remove(device.getAddress());
                     Toast.makeText(this, device.getName() + (" ") + getString
                                     (R.string.del_success),
                             Toast.LENGTH_SHORT).show();
