@@ -1,5 +1,7 @@
 package com.kai.mstyle.blegatt;
 
+import android.bluetooth.BluetoothGattCharacteristic;
+
 /**
  * Created by kiah on 8/13/2016.
  */
@@ -30,5 +32,55 @@ public class BtUtils {
         }
 
         return sb.toString();
+    }
+
+    public static String matchProperty(int property) {
+        String prop = "";
+        if ((property & BluetoothGattCharacteristic.PERMISSION_READ) != 0) {
+            prop += "R";
+        }
+        if ((property & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0) {
+            prop += "W";
+        }
+        if ((property & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) {
+            prop += "N";
+        }
+
+        return prop;
+    }
+
+    public static int getValueFormat(int properties) {
+        if ((BluetoothGattCharacteristic.FORMAT_FLOAT & properties) != 0)
+            return BluetoothGattCharacteristic.FORMAT_FLOAT;
+        if ((BluetoothGattCharacteristic.FORMAT_SFLOAT & properties) != 0)
+            return BluetoothGattCharacteristic.FORMAT_SFLOAT;
+        if ((BluetoothGattCharacteristic.FORMAT_SINT16 & properties) != 0)
+            return BluetoothGattCharacteristic.FORMAT_SINT16;
+        if ((BluetoothGattCharacteristic.FORMAT_SINT32 & properties) != 0)
+            return BluetoothGattCharacteristic.FORMAT_SINT32;
+        if ((BluetoothGattCharacteristic.FORMAT_SINT8 & properties) != 0)
+            return BluetoothGattCharacteristic.FORMAT_SINT8;
+        if ((BluetoothGattCharacteristic.FORMAT_UINT16 & properties) != 0)
+            return BluetoothGattCharacteristic.FORMAT_UINT16;
+        if ((BluetoothGattCharacteristic.FORMAT_UINT32 & properties) != 0)
+            return BluetoothGattCharacteristic.FORMAT_UINT32;
+        if ((BluetoothGattCharacteristic.FORMAT_UINT8 & properties) != 0)
+            return BluetoothGattCharacteristic.FORMAT_UINT8;
+        return 0;
+    }
+
+    public static String getPropertyDescription(int props) {
+        String propertiesString = String.format("0x%04X [", props);
+        if ((props & BluetoothGattCharacteristic.PROPERTY_READ) != 0)
+            propertiesString += "read ";
+        if ((props & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0)
+            propertiesString += "write ";
+        if ((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0)
+            propertiesString += "notify ";
+        if ((props & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0)
+            propertiesString += "indicate ";
+        if ((props & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0)
+            propertiesString += "write_no_response ";
+        return propertiesString;
     }
 }

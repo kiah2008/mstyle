@@ -16,6 +16,8 @@
 
 package com.kai.mstyle.blegatt;
 
+import android.util.SparseArray;
+
 import java.util.HashMap;
 
 /**
@@ -25,6 +27,8 @@ public class DefinedGattAttributes {
     public static String HEART_RATE_MEASUREMENT = "00002a37-0000-1000-8000-00805f9b34fb";
     public static String CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
     private static HashMap<String, String> attributes = new HashMap();
+    private static SparseArray<String> mValueFormats = new SparseArray<String>();
+
 
     static {
 // Sample Services.
@@ -417,10 +421,30 @@ public class DefinedGattAttributes {
         attributes.put("00002aa2-0000-1000-8000-00805f9b34fb", "Find Phone");
         attributes.put("00002aa3-0000-1000-8000-00805f9b34fb", "Activity");
         attributes.put("0a0b2aa4-0000-1000-8000-00805f9b34fb", "Remote Capture");
+
+        mValueFormats.put(Integer.valueOf(52), "32bit float");
+        mValueFormats.put(Integer.valueOf(50), "16bit float");
+        mValueFormats.put(Integer.valueOf(34), "16bit signed int");
+        mValueFormats.put(Integer.valueOf(36), "32bit signed int");
+        mValueFormats.put(Integer.valueOf(33), "8bit signed int");
+        mValueFormats.put(Integer.valueOf(18), "16bit unsigned int");
+        mValueFormats.put(Integer.valueOf(20), "32bit unsigned int");
+        mValueFormats.put(Integer.valueOf(17), "8bit unsigned int");
     }
 
     public static String lookup(String uuid, String defaultName) {
         String name = attributes.get(uuid);
         return name == null ? defaultName : name;
+    }
+
+    public static String lookup(String uuid) {
+        String name = attributes.get(uuid);
+        return name == null ? "Unkown" : name;
+    }
+
+
+    static public String lookupTypeDescription(final int format) {
+        Integer tmp = Integer.valueOf(format);
+        return mValueFormats.get(tmp, "Unknown Format");
     }
 }

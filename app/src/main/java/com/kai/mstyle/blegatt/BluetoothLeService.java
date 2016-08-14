@@ -52,6 +52,12 @@ public class BluetoothLeService extends Service {
             "com.example.bluetooth.le.ACTION_RSSI_AVAILABLE";
     public final static String EXTRA_DATA =
             "com.example.bluetooth.le.EXTRA_DATA";
+    public final static String EXTRA_DATA_TYPE = "com.example.bluetooth.le.EXTRA_DATA_TYPE";
+    public final static String EXTRA_PROPERTY = "com.example.bluetooth.le.EXTRA_DATA_PROPERTY";
+    public final static String EXTRA_NAME =
+            "com.example.bluetooth.le.EXTRA_NAME";
+    public final static String EXTRA_UUID =
+            "com.example.bluetooth.le.EXTRA_UUID";
     public final static UUID UUID_HEART_RATE_MEASUREMENT =
             UUID.fromString(DefinedGattAttributes.HEART_RATE_MEASUREMENT);
     private final static String TAG = BluetoothLeService.class.getSimpleName();
@@ -141,6 +147,7 @@ public class BluetoothLeService extends Service {
                                  final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
 
+        intent.putExtra(EXTRA_UUID, characteristic.getUuid());
         // This is special handling for the Heart Rate Measurement profile.  Data parsing is
         // carried out as per profile specifications:
         // http://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.heart_rate_measurement.xml
@@ -158,14 +165,20 @@ public class BluetoothLeService extends Service {
             Log.d(TAG, String.format("Received heart rate: %d", heartRate));
             intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
         } else {
+            int prop = characteristic.getProperties();
+            int format = BtUtils.getValueFormat(prop);
+            String sProp = BtUtils.getPropertyDescription(prop);
+            intent.putExtra(EXTRA_DATA_TYPE, format);
+            intent.putExtra(EXTRA_PROPERTY, sProp);
             // For all other profiles, writes the data formatted in HEX.
             final byte[] data = characteristic.getValue();
-            if (data != null && data.length > 0) {
-                final StringBuilder stringBuilder = new StringBuilder(data.length);
-                for (byte byteChar : data)
-                    stringBuilder.append(String.format("%02X ", byteChar));
-                intent.putExtra(EXTRA_DATA, new String(data) + "\n" + stringBuilder.toString());
-            }
+//            if (data != null && data.length > 0) {
+//                final StringBuilder stringBuilder = new StringBuilder(data.length);
+//                for (byte byteChar : data)
+//                    stringBuilder.append(String.format("%02X ", byteChar));
+//                intent.putExtra(EXTRA_DATA, new String(data) + "\n" + stringBuilder.toString());
+//            }
+            intent.putExtra(EXTRA_DATA, data);
         }
         sendBroadcast(intent);
     }

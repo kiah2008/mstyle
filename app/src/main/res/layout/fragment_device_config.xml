@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:drawable/screen_background_light"
+    android:clickable="true"
     android:orientation="vertical"
     tools:context="com.kai.mstyle.blegatt.fragment.DeviceConfigFragment">
 
@@ -228,7 +230,8 @@
         android:id="@+id/char_details_hex_value"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@null"
+        android:layout_margin="4dip"
+        android:cursorVisible="true"
         android:ems="10">
 
         <requestFocus/>
