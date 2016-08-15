@@ -1,5 +1,6 @@
 package com.kai.mstyle.blegatt.fragment;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
@@ -11,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.kai.mstyle.R;
@@ -42,8 +44,8 @@ public class DeviceConfigFragment extends Fragment implements View.OnClickListen
     private TextView mProp;
     private Button mReadButton;
     private BluetoothGattCharacteristic mCharacteristic;
-
     private OnFragmentInteractionListener mListener;
+    private ProgressBar mProgress;
 
     public DeviceConfigFragment() {
     }
@@ -77,9 +79,7 @@ public class DeviceConfigFragment extends Fragment implements View.OnClickListen
             mDevAddress = args.getString(ARG_DEV_ADDRESS);
             mSrvUUID = getArguments().getString(ARG_SRV_UUID);
             mUUID = getArguments().getString(ARG_UUID);
-
         }
-
     }
 
     @Override
@@ -91,6 +91,9 @@ public class DeviceConfigFragment extends Fragment implements View.OnClickListen
 
     public void updateCharacteristic(BluetoothGattCharacteristic ch) {
         mCharacteristic = ch;
+        if (mProgress != null) {
+            mProgress.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -112,8 +115,15 @@ public class DeviceConfigFragment extends Fragment implements View.OnClickListen
                 .setText(mUUID);
         mDataType = (TextView) view.findViewById(R.id.char_details_type);
         mProp = (TextView) view.findViewById(R.id.char_details_properties);
-        mReadButton = (Button)view.findViewById(R.id.char_details_read_btn);
+        mReadButton = (Button) view.findViewById(R.id.char_details_read_btn);
         mReadButton.setOnClickListener(this);
+        mProgress = (ProgressBar) getActivity().findViewById(R.id
+                .cfg_waiting);
+        if (mCharacteristic == null) {
+            mProgress.setVisibility(View.VISIBLE);
+        } else {
+            mProgress.setVisibility(View.GONE);
+        }
     }
 
     public void onButtonPressed(Uri uri) {
@@ -123,7 +133,7 @@ public class DeviceConfigFragment extends Fragment implements View.OnClickListen
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(Activity context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
@@ -169,13 +179,17 @@ public class DeviceConfigFragment extends Fragment implements View.OnClickListen
 
     @Override
     public void onClick(View v) {
-        switch(v.getId()) {
+        switch (v.getId()) {
             case R.id.char_details_read_btn:
-                if(mListener!= null) {
+                if (mListener != null) {
                     mListener.getService().readCharacteristic(mCharacteristic);
                 }
                 break;
         }
+    }
+
+    public String getChUuid() {
+        return mUUID;
     }
 
     /**
@@ -183,7 +197,7 @@ public class DeviceConfigFragment extends Fragment implements View.OnClickListen
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
      * activity.
-     * <p>
+     * <p/>
      * See the Android Training lesson <a href=
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.

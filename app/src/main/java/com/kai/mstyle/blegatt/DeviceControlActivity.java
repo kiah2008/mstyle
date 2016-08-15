@@ -31,6 +31,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -57,6 +58,9 @@ public class DeviceControlActivity extends Activity implements
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     private static final String EXTRAS_MONITOR_STATE = "MONITOR_STATE";
+    private static final String EXTRA_SRV_CLICKED_POSITION = "EXTRA_SRV_CLICKED_POSITION";
+    private static final String EXTRA_CH_CLICKED_POSITION = "EXTRA_CH_CLICKED_POSITION";
+
     private static final String TAG_DEVICE_CFG = "TAG_DEVICE_CFG";
     private static final int RSSI_UPDATE_TIME_INTERVAL = 2500;
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
@@ -71,6 +75,8 @@ public class DeviceControlActivity extends Activity implements
     private BluetoothLeService mBluetoothLeService;
     private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
             new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
+    private int mSrvPosition = -1;
+    private int mChPosition = -1;
     // If a given GATT characteristic is selected, check for supported features.  This sample
     // demonstrates 'Read' and 'Notify' features.  See
     // http://d.android.com/reference/android/bluetooth/BluetoothGatt.html for the complete
@@ -81,6 +87,8 @@ public class DeviceControlActivity extends Activity implements
                 public boolean onChildClick(ExpandableListView parent, View v, int groupPosition,
                                             int childPosition, long id) {
                     if (mGattCharacteristics != null) {
+                        mSrvPosition = groupPosition;
+                        mChPosition = childPosition;
                         final BluetoothGattCharacteristic characteristic =
                                 mGattCharacteristics.get(groupPosition).get(childPosition);
 
@@ -101,7 +109,7 @@ public class DeviceControlActivity extends Activity implements
                                                 .toString(), characteristic
                                                 .getUuid().toString());
                         fragment.updateCharacteristic(characteristic);
-                        fragmentManager.beginTransaction().replace(R.id
+                        fragmentManager.beginTransaction().add(R.id
                                         .device_config_layout, fragment,
                                 TAG_DEVICE_CFG).addToBackStack(null)
                                 .commit();
@@ -148,6 +156,7 @@ public class DeviceControlActivity extends Activity implements
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             mBluetoothLeService = null;
+            clearUI();
         }
     };
     private Handler mHandler;
@@ -166,7 +175,6 @@ public class DeviceControlActivity extends Activity implements
                 updateConnectionState(CONNECT_STAT.STAT_CONNECTED);
                 readDeviceRssi(true);
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                updateConnectionState(CONNECT_STAT.STAT_DISCONNECTED);
                 readDeviceRssi(false);
                 clearUI();
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
@@ -202,6 +210,7 @@ public class DeviceControlActivity extends Activity implements
 
     private void clearUI() {
         mGattServicesList.setAdapter((SimpleExpandableListAdapter) null);
+        updateConnectionState(CONNECT_STAT.STAT_DISCONNECTED);
     }
 
     @Override
@@ -217,6 +226,10 @@ public class DeviceControlActivity extends Activity implements
         if (savedInstanceState != null) {
             mHasMonitorRss = savedInstanceState.getBoolean
                     (EXTRAS_MONITOR_STATE);
+            mSrvPosition = savedInstanceState.getInt
+                    (EXTRA_SRV_CLICKED_POSITION);
+            mChPosition = savedInstanceState.getInt
+                    (EXTRA_CH_CLICKED_POSITION);
         }
         mHandler = new Handler();
         // Sets up UI references.
@@ -224,6 +237,13 @@ public class DeviceControlActivity extends Activity implements
         ((TextView) findViewById(com.kai.mstyle.R.id.peripheral_name)).setText(mDeviceName);
         mGattServicesList = (ExpandableListView) findViewById(com.kai.mstyle.R.id.gatt_services_list);
         mGattServicesList.setOnChildClickListener(servicesListClickListner);
+        mGattServicesList.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
+            @Override
+            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+                mSrvPosition = groupPosition;
+                return false;
+            }
+        });
         mConnectionState = (TextView) findViewById(com.kai.mstyle.R.id.connection_state);
         mDeviceRssi = (TextView) findViewById(com.kai.mstyle.R.id.peripheral_rssi);
 
@@ -254,6 +274,8 @@ public class DeviceControlActivity extends Activity implements
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
             if (result) {
                 updateConnectionState(CONNECT_STAT.STAT_CONNECTING);
+            } else {
+                clearUI();
             }
             Log.d(TAG, "Connect request result=" + result);
         }
@@ -262,7 +284,9 @@ public class DeviceControlActivity extends Activity implements
     @Override
     protected void onPause() {
         super.onPause();
-        mBluetoothLeService.disconnect();
+        if (mBluetoothLeService != null) {
+            mBluetoothLeService.disconnect();
+        }
         mConnected = CONNECT_STAT.STAT_DISCONNECTED;
         unregisterReceiver(mGattUpdateReceiver);
     }
@@ -271,12 +295,13 @@ public class DeviceControlActivity extends Activity implements
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(EXTRAS_MONITOR_STATE, mHasMonitorRss);
+        outState.putInt(EXTRA_CH_CLICKED_POSITION, mChPosition);
+        outState.putInt(EXTRA_SRV_CLICKED_POSITION, mSrvPosition);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         unbindService(mServiceConnection);
         mBluetoothLeService = null;
     }
@@ -443,6 +468,26 @@ public class DeviceControlActivity extends Activity implements
                 new int[]{R.id.ch_name, R.id.ch_uuid, R.id.ch_prop}
         );
         mGattServicesList.setAdapter(gattServiceAdapter);
+        if (mSrvPosition != -1) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mGattServicesList.expandGroup(mSrvPosition);
+                    if (mChPosition != -1) {
+                        DeviceConfigFragment fragment = (DeviceConfigFragment) getFragmentManager
+                                ().findFragmentByTag(TAG_DEVICE_CFG);
+                        final BluetoothGattCharacteristic ch = mGattCharacteristics.get(mSrvPosition)
+                                .get(mChPosition);
+                        if (fragment != null && TextUtils.equals(ch.getUuid
+                                ().toString(), fragment.getChUuid())) {
+                            fragment.updateCharacteristic
+                                    (ch);
+                        }
+                    }
+                }
+            });
+        }
+
     }
 
     @Override
