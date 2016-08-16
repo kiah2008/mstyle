@@ -235,6 +235,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="4dip"
             android:cursorVisible="true"
+            android:textAllCaps="true"
             android:ems="10">
 
             <requestFocus/>
@@ -301,18 +302,39 @@
             </TableRow>
 
             <TableRow
-                android:id="@+id/tableRow10"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:id="@+id/textView11"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="right|center_vertical"
+                    android:text="Hex:"
+                    android:textColor="#888"
+                    android:textSize="10sp"/>
+
+
+                <TextView
+                    android:id="@+id/details_hex_value"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:layout_weight="10"/>
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="right|center_vertical"
                     android:text="Decimal:"
                     android:textColor="#888"
                     android:textSize="10sp"/>
+
 
                 <TextView
                     android:id="@+id/char_details_decimal_value"

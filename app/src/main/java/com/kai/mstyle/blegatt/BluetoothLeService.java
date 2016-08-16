@@ -147,7 +147,7 @@ public class BluetoothLeService extends Service {
                                  final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
 
-        intent.putExtra(EXTRA_UUID, characteristic.getUuid());
+        intent.putExtra(EXTRA_UUID, characteristic.getUuid().toString());
         // This is special handling for the Heart Rate Measurement profile.  Data parsing is
         // carried out as per profile specifications:
         // http://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.heart_rate_measurement.xml
@@ -167,9 +167,9 @@ public class BluetoothLeService extends Service {
         } else {
             int prop = characteristic.getProperties();
             int format = BtUtils.getValueFormat(prop);
-            String sProp = BtUtils.getPropertyDescription(prop);
+//            String sProp = BtUtils.getPropertyDescription(prop);
             intent.putExtra(EXTRA_DATA_TYPE, format);
-            intent.putExtra(EXTRA_PROPERTY, sProp);
+            intent.putExtra(EXTRA_PROPERTY, prop);
             // For all other profiles, writes the data formatted in HEX.
             final byte[] data = characteristic.getValue();
 //            if (data != null && data.length > 0) {
@@ -296,12 +296,12 @@ public class BluetoothLeService extends Service {
      *
      * @param characteristic The characteristic to read from.
      */
-    public void readCharacteristic(BluetoothGattCharacteristic characteristic) {
+    public boolean readCharacteristic(BluetoothGattCharacteristic characteristic) {
         if (mBluetoothAdapter == null || mBluetoothGatt == null) {
             Log.w(TAG, "BluetoothAdapter not initialized");
-            return;
+            return false;
         }
-        mBluetoothGatt.readCharacteristic(characteristic);
+        return mBluetoothGatt.readCharacteristic(characteristic);
     }
 
     public boolean readRssi() {
@@ -351,5 +351,16 @@ public class BluetoothLeService extends Service {
         BluetoothLeService getService() {
             return BluetoothLeService.this;
         }
+    }
+
+
+    /* set new value for particular characteristic */
+    public void writeDataToCharacteristic(final BluetoothGattCharacteristic ch, final byte[] dataToWrite) {
+        if (mBluetoothAdapter == null || mBluetoothGatt == null || ch == null) return;
+
+        // first set it locally....
+        ch.setValue(dataToWrite);
+        // ... and then "commit" changes to the peripheral
+        mBluetoothGatt.writeCharacteristic(ch);
     }
 }

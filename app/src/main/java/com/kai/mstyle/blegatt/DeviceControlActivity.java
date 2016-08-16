@@ -171,6 +171,7 @@ public class DeviceControlActivity extends Activity implements
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
+            Log.d(TAG, "onReceive " + action);
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 updateConnectionState(CONNECT_STAT.STAT_CONNECTED);
                 readDeviceRssi(true);
@@ -205,6 +206,7 @@ public class DeviceControlActivity extends Activity implements
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_RSSI_AVAILABLE);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
     }
 

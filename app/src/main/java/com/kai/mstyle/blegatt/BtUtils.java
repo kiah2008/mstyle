@@ -70,7 +70,7 @@ public class BtUtils {
     }
 
     public static String getPropertyDescription(int props) {
-        String propertiesString = String.format("0x%04X [", props);
+        String propertiesString = String.format("0x%02X [", props);
         if ((props & BluetoothGattCharacteristic.PROPERTY_READ) != 0)
             propertiesString += "read ";
         if ((props & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0)
@@ -81,6 +81,27 @@ public class BtUtils {
             propertiesString += "indicate ";
         if ((props & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0)
             propertiesString += "write_no_response ";
+        propertiesString += "]";
         return propertiesString;
+    }
+
+    public static byte[] parseHexStringToBytes(final String hex) {
+        String tmp = null;
+        if (hex.indexOf('c') != -1) {
+            hex.substring(2).replaceAll
+                    ("[^[0-9][a-f]]", "");
+        } else {
+            hex.replaceAll
+                    ("[^[0-9][a-f]]", "");
+        }
+        byte[] bytes = new byte[tmp.length() / 2]; // every two letters in the string are one byte finally
+        String part = "";
+
+        for (int i = 0; i < bytes.length; ++i) {
+            part = "0x" + tmp.substring(i * 2, i * 2 + 2);
+            bytes[i] = Long.decode(part).byteValue();
+        }
+
+        return bytes;
     }
 }
